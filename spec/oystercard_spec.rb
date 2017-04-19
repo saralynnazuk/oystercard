@@ -1,10 +1,15 @@
 require 'oystercard'
 
 describe Oystercard do
-  let(:station) { double(:station) }
+  let(:station_in) { double(:station) }
+  let(:station_out) { double(:station) }
 
   it 'has a balance of zero' do
     expect(subject.balance).to eq(0)
+  end
+
+  it 'has an empty journey list upon instantiation' do
+    expect(subject.journeys).to be_empty
   end
 
     describe '#top_up' do
@@ -20,7 +25,7 @@ describe Oystercard do
 
       it 'will not allow touch in if below minimum balance' do
         message = "Insufficient funds, please top up!"
-        expect { subject.touch_in(station) }.to raise_error message
+        expect { subject.touch_in(station_in) }.to raise_error message
       end
 
     end
@@ -37,15 +42,15 @@ describe Oystercard do
       end
 
       it 'can touch in' do
-        allow(station).to receive_messages( :name => "Aldgate" )
-        subject.touch_in(station)
+        allow(station_in).to receive_messages( :name => "Aldgate" )
+        subject.touch_in(station_in)
         expect(subject).to be_in_journey
       end
 
       it 'remembers its entry station' do
-        allow(station).to receive_messages( :name => "Aldgate" )
-        subject.touch_in(station)
-        expect(subject.entry_station).to eq station.name
+        allow(station_in).to receive_messages( :name => "Aldgate" )
+        subject.touch_in(station_in)
+        expect(subject.entry_station).to eq station_in.name
       end
     end
 
@@ -55,15 +60,24 @@ describe Oystercard do
       end
 
       it 'can touch out' do
-        allow(station).to receive_messages( :name => "Aldgate" )
-        subject.touch_in(station)
-        subject.touch_out
+        allow(station_in).to receive_messages( :name => "Aldgate" )
+        allow(station_out).to receive_messages( :name => "Liverpool Street" )
+        subject.touch_in(station_in)
+        subject.touch_out(station_out)
         expect(subject).not_to be_in_journey
       end
 
       it 'deducts fare from the balance' do
-
-        expect { subject.touch_out }.to change { subject.balance }.by -Oystercard::MINIMUM_FARE
+        allow(station_out).to receive_messages( :name => "Liverpool Street" )
+        expect { subject.touch_out(station_out) }.to change { subject.balance }.by -Oystercard::MINIMUM_FARE
       end
+
+      it 'remembers exit station' do
+        allow(station_out).to receive_messages( :name => "Liverpool Street")
+        subject.touch_out(station_out)
+        expect(subject.exit_station).to eq station_out.name
+      end
+
     end
+
 end
