@@ -49,12 +49,6 @@ describe Oystercard do
         card.touch_in(station_in)
         expect(card).to be_in_journey
       end
-
-      it 'remembers its entry station' do
-        allow(station_in).to receive_messages( :name => "Aldgate" )
-        card.touch_in(station_in)
-        expect(card.entry_station).to eq station_in.name
-      end
     end
 
     describe '#touch_out' do
@@ -73,12 +67,6 @@ describe Oystercard do
       it 'deducts fare from the balance' do
         allow(station_out).to receive_messages( :name => "Liverpool Street" )
         expect { card.touch_out(station_out) }.to change { card.balance }.by -Oystercard::MINIMUM_FARE
-      end
-
-      it 'remembers exit station' do
-        allow(station_out).to receive_messages( :name => "Liverpool Street")
-        card.touch_out(station_out)
-        expect(card.exit_station).to eq station_out.name
       end
 
     end
