@@ -1,4 +1,5 @@
 require 'oystercard'
+require 'journey'
 
 describe Oystercard do
 
@@ -6,6 +7,7 @@ describe Oystercard do
 
   let(:station_in) { double(:station) }
   let(:station_out) { double(:station) }
+  let(:journey) { double :journey, station: station_in }
 
   it 'has a balance of zero' do
     expect(card.balance).to eq(0)
@@ -39,9 +41,10 @@ describe Oystercard do
       end
 
       it 'can touch in' do
-        allow(station_in).to receive_messages( :name => "Aldgate" )
-        card.touch_in(station_in)
-        expect(card).to be_in_journey
+        # allow(station_in).to receive_messages( :name => "Aldgate" )
+        allow(journey).to receive(:entry_station) { station_in }
+        card.touch_in(journey)
+        expect(card.journey.entry_station).to eq station_in
       end
     end
 
@@ -50,17 +53,13 @@ describe Oystercard do
         card.top_up(20)
       end
 
-      it 'can touch out' do
-        allow(station_in).to receive_messages( :name => "Aldgate" )
-        allow(station_out).to receive_messages( :name => "Liverpool Street" )
-        card.touch_in(station_in)
-        card.touch_out(station_out)
-        expect(card).not_to be_in_journey
-      end
-
-      it 'deducts fare from the balance' do
-        allow(station_out).to receive_messages( :name => "Liverpool Street" )
-        expect { card.touch_out(station_out) }.to change { card.balance }.by -Oystercard::MINIMUM_FARE
+      it 'deducts minimum fare from the balance when journey completed' do
+        allow(journey).to receive(:end).with(station_out)
+        allow(journey).to receive(:fare) { Journey::MINIMUM_FARE }
+        allow(journey).to receive(:entry_station)
+        allow(journey).to receive(:exit_station)
+        card.touch_in(journey)
+        expect { card.touch_out(station_out) }.to change { card.balance }.by -Journey::MINIMUM_FARE
       end
 
     end
@@ -71,12 +70,14 @@ describe Oystercard do
     end
 
     it 'stores a journey - entry and exit' do
-      allow(station_in).to receive_messages( :name => "Aldgate" )
-      allow(station_out).to receive_messages( :name => "Liverpool Street" )
-      card.touch_in(station_in)
+      allow(journey).to receive(:end).with(station_out)
+      allow(journey).to receive(:fare) { Journey::MINIMUM_FARE }
+      allow(journey).to receive(:entry_station) { station_in }
+      allow(journey).to receive(:exit_station) { station_out }
+      card.touch_in(journey)
       card.touch_out(station_out)
-      any_name_hash = { :entry_station => station_in.name, :exit_station => station_out.name }
-      expect(card.journey).to eq any_name_hash
+      one_journey = { :entry_station => station_in , :exit_station => station_out  }
+      expect(card.history).to include one_journey
     end
   end
 
