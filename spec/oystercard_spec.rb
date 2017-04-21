@@ -70,6 +70,7 @@ describe Oystercard do
       end
 
     end
+
   describe 'journey' do
     before do
       card.top_up(20)
