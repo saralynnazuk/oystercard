@@ -12,7 +12,7 @@ describe Oystercard do
   end
 
   it 'has an empty journey list upon instantiation' do
-    expect(card.journey).to be_empty
+    expect(card.history).to be_empty
   end
 
     describe '#top_up' do
@@ -31,12 +31,6 @@ describe Oystercard do
         expect { card.touch_in(station_in) }.to raise_error message
       end
 
-    end
-
-    describe '#in_journey' do
-      it 'is initially not in a journey' do
-        expect(card).not_to be_in_journey
-      end
     end
 
     describe '#touch_in' do

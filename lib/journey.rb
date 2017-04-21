@@ -19,6 +19,6 @@ attr_reader :entry_station, :exit_station
 
   def fare
     complete? ? MINIMUM_FARE : PENALTY
-    end
+  end
 
 end
